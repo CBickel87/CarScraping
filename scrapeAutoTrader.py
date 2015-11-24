@@ -8,7 +8,6 @@ res = requests.get(url,  headers={'User-Agent': 'Mozilla/5.0'})
 res.raise_for_status()
 soup = BeautifulSoup(res.text, 'lxml')
 
-# TODO: Write to file
 # TODO: Setting logging
 # TODO: Setup email to email file contents
 # TODO: Figure out & fix Tinyurl HTTP timeout issue
@@ -22,6 +21,8 @@ prices = soup.select('.price.atcui-clearfix > h4 > span')
 titles = soup.select('span.atcui-truncate.ymm > span')
 titleDescrip = soup.select('span.trim')
 
+# OPEN FILE
+autotraderFile = open('autotrader.txt', 'w')
 
 # Shorten URLs using pyshorteners module via TinyURL
 def tinyurlShort(self):
@@ -31,21 +32,24 @@ def tinyurlShort(self):
         return(self)
     else:
         self = (urllib.parse.urljoin('http://www.autotrader.com/', self))
-    print(self)
+    autotraderFile.write(self + '\n')
 
     # Catch: Timeout for server to respond
     read_timeout = 1.00
     try:
         requests.get(self, timeout=(10.0, read_timeout))
         shortener = Shortener('TinyurlShortener')
-        print(shortener.short(self))
+        autotraderFile.write((shortener.short(self)) + '\n\n')
     except requests.exceptions.ReadTimeout as e:
-        print(e)
+        autotraderFile.write(e + '\n\n')
 
 # For loop and zip the lists together
 for a, b, c, d in zip(titles, titleDescrip, prices, links):
     a = a.getText()
     b = b.getText()
     c = c.getText()
-    print(' '.join(((a, b,) + (' - ',) + (c,))))
+    autotraderFile.write(' '.join(((a, b,) + (' - ',) + (c,))) + '\n')
     tinyurlShort(d['href'])
+
+# Close File
+autotraderFile.close()
