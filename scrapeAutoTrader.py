@@ -3,7 +3,7 @@ from pyshorteners import Shortener
 import urllib.parse, requests, logging
 
 # Log file & Config options
-logging.basicConfig(filename='autoTrader.log', level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+logging.basicConfig(filename='autoTrader.log', level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s\n', datefmt='%m/%d/%Y %I:%M:%S %p')
 
 # TODO: Create script to email file contents of car listings
 # TODO: Figure out & fix Tinyurl HTTP timeout issue
@@ -20,6 +20,8 @@ prices = soup.select('.price.atcui-clearfix > h4 > span')
 # Find titles for each vehicle
 titles = soup.select('span.atcui-truncate.ymm > span')
 titleDescrip = soup.select('span.trim')
+# Mileage
+mileage = soup.select('span.mileage > span')
 
 # OPEN FILE
 autotraderFile = open('carlisting.txt', 'w')
@@ -34,22 +36,22 @@ def tinyurlShort(self):
         self = (urllib.parse.urljoin('http://www.autotrader.com/', self))
     autotraderFile.write(self + '\n')
 
-    # Catch: Timeout for server to respond
+    # Catch timeouts
     try:
-        requests.get(self, timeout=10.0)
         shortener = Shortener('TinyurlShortener')
         autotraderFile.write((shortener.short(self)) + '\n\n')
-    except Exception as e:
+    except Exception as err:
         autotraderFile.write('ERROR: Check the log.' + '\n\n')
-        logging.error(str(e) + '\n')
+        logging.error(str(err) + '\n')
 
 # For loop and zip the lists together
-for a, b, c, d in zip(titles, titleDescrip, prices, links):
+for a, b, c, d, e in zip(titles, titleDescrip, mileage, prices, links):
     a = a.getText()
     b = b.getText()
     c = c.getText()
-    autotraderFile.write(' '.join(((a, b,) + (' - ',) + (c,))) + '\n')
-    tinyurlShort(d['href'])
+    d = d.getText()
+    autotraderFile.write(' '.join(((a, b,) + (' - ',) + (c, ' miles') + (' - ',) + (d,))) + '\n')
+    tinyurlShort(e['href'])
 
 # Close File
 autotraderFile.close()
