@@ -3,7 +3,7 @@ from pyshorteners import Shortener
 import urllib.parse, requests, logging
 
 # Log file & Config options
-logging.basicConfig(filename='autoTrader.log', level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s\n', datefmt='%m/%d/%Y %I:%M:%S %p')
+logging.basicConfig(filename='autoTrader.log', level=logging.WARNING, format=' %(asctime)s - %(levelname)s - %(message)s\n', datefmt='%m/%d/%Y %I:%M:%S %p')
 
 # TODO: Create script to email file contents of car listings
 # TODO: Figure out & fix Tinyurl HTTP timeout issue
@@ -34,11 +34,12 @@ def tinyurlShort(self):
         return(self)
     else:
         self = (urllib.parse.urljoin('http://www.autotrader.com/', self))
-    autotraderFile.write(self + '\n')
+    # Write the full URL until TinyURL shortener is fixed
+    #autotraderFile.write(self + '\n')
 
     # Catch timeouts
     try:
-        shortener = Shortener('TinyurlShortener')
+        shortener = Shortener('TinyurlShortener', timeout=9000)
         autotraderFile.write((shortener.short(self)) + '\n\n')
     except Exception as err:
         autotraderFile.write('ERROR: Check the log.' + '\n\n')
