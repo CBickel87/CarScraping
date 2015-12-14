@@ -1,12 +1,11 @@
 from bs4 import BeautifulSoup
 from pyshorteners import Shortener
-import urllib.parse, requests, logging
+import urllib.parse, requests, logging, emailListing
 
 # Log file & Config options
 logging.basicConfig(filename='autoTrader.log', level=logging.WARNING, format=' %(asctime)s - %(levelname)s - %(message)s\n', datefmt='%m/%d/%Y %I:%M:%S %p')
 
-# TODO: Create script to email file contents of car listings
-# TODO: Figure out & fix Tinyurl HTTP timeout issue
+# TODO: Setup VPS and use crontab to run script daily
 
 url = 'An Autotrader URL'
 res = requests.get(url,  headers={'User-Agent': 'Mozilla/5.0'})
@@ -34,10 +33,8 @@ def tinyurlShort(self):
         return(self)
     else:
         self = (urllib.parse.urljoin('http://www.autotrader.com/', self))
-    # Write the full URL until TinyURL shortener is fixed
-    #autotraderFile.write(self + '\n')
 
-    # Catch timeouts
+    # Shorten URL or catch exceptions
     try:
         shortener = Shortener('TinyurlShortener', timeout=9000)
         autotraderFile.write((shortener.short(self)) + '\n\n')
@@ -54,5 +51,8 @@ for a, b, c, d, e in zip(titles, titleDescrip, mileage, prices, links):
     autotraderFile.write(' '.join(((a, b,) + (' - ',) + (c, ' miles') + (' - ',) + (d,))) + '\n')
     tinyurlShort(e['href'])
 
-# Close File
+# Close the listings file
 autotraderFile.close()
+
+# Email the listings
+emailListing.opener('carlisting.txt')
